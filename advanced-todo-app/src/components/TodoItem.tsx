@@ -6,12 +6,14 @@ interface TodoItemProps {
   onDeleteTodo: (id: number) => void;
 }
 
-export const TodoItem: React.FC<TodoItemProps> = (props: TodoItemProps) => {
-  const { todo, onToggleComplete, onDeleteTodo } = props;
+export const TodoItem: React.FC<TodoItemProps> = ({ todo, onToggleComplete, onDeleteTodo }) => {
 
   return (
     <li>
-      <span onClick={() => onToggleComplete(todo.id)}>{todo.text}</span> 
+      <div>
+        <span onClick={() => onToggleComplete(todo.id)}>{todo.text}</span> 
+        <span>(author: {todo.author})</span>
+      </div>
       <button onClick={() => onDeleteTodo(todo.id)}> Delete </button>
     </li>
   );
