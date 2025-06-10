@@ -59,10 +59,10 @@ function App() {
       setIsLoading(true);
       const newTodo = await addTodoApi(text);
       setTodos(prevTodos => [...prevTodos, newTodo]);
-      getAllTodos();
-      setIsLoading(false);
     } catch (error) {
       console.log(`todo를 추가하는 데 실패했습니다 : `, error);
+    } finally {
+      setIsLoading(false);        // 추가했습니다.
     }
   }
 
@@ -71,7 +71,7 @@ function App() {
     try {
       const todoToToggle = todos.find(todo => todo.id === id);
       if (!todoToToggle) return;
-      const updateTodo = await toggleTodoApi(id, todoToToggle.completed);
+      const updateTodo = await toggleTodoApi(id);       // 수정했습니다.
       setTodos(prevTodos => 
         prevTodos.map(todo => (todo.id === id ? updateTodo : todo))
       );

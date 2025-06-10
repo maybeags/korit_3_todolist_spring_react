@@ -2,6 +2,7 @@ package com.example.todo_backend_mariadb.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,11 +10,12 @@ import lombok.NoArgsConstructor;
 @Data // 종합패키지 -> getter / setter alt+ins로 안만들겁니다.
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder    // 수정했습니다.
 public class Todo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false, updatable = false)
-    private Long id;
+    private Long Id;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String text;
