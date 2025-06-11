@@ -91,8 +91,8 @@ function App() {
   }
 
   return (
-    <div>
-      <header style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem'}}>
+    <div className="app-container">
+      <header className='app-header'>
         <h1>Todo List</h1>
         <div>
           {
@@ -106,7 +106,7 @@ function App() {
           }
         </div>
       </header>
-      <main>
+      <main className='app-main'>
         {
           authToken ? (
             isLoading ? (

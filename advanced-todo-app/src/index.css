@@ -1,4 +1,37 @@
+/* src/index.css */
+
+/* CSS 변수를 사용하여 색상을 관리합니다. 나중에 색상 변경이 쉬워집니다. */
 :root {
+  --background-color: #1a1a2e; /* 깊은 네이비 색 배경 */
+  --surface-color: #162447;  /* 컴포넌트 배경색 */
+  --primary-text-color: #e4f9f5; /* 기본 텍스트 색상 */
+  --secondary-text-color: #9a9a9a; /* 보조 텍스트 색상 */
+  --accent-color: #8a2be2;      /* 포인트 컬러 (보라색 계열) */
+  --accent-color-hover: #9932cc; /* 호버 시 포인트 컬러 */
+  --danger-color: #e94560;       /* 삭제 버튼 색상 */
+  --danger-color-hover: #c42b44;   /* 삭제 버튼 호버 색상 */
+}
+
+/* 모든 요소에 부드러운 박스 모델을 적용합니다. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Pretendard', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background-color);
+  color: var(--primary-text-color);
+  display: flex;
+  justify-content: center;
+  padding-top: 4rem;
+}
+
+/* :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -65,4 +98,4 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
-}
+} */
