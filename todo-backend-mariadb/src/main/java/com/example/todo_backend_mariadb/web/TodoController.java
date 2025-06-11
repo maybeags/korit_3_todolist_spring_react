@@ -24,7 +24,6 @@ public class TodoController {
     }
 
     @PostMapping
-
     public ResponseEntity<TodoDtos.TodoResponseDto> createTodo(@RequestBody TodoDtos.TodoCreateRequestDto requestDto, @AuthenticationPrincipal Jwt principal) {
         return ResponseEntity.status(HttpStatus.CREATED).body(todoService.createTodo(requestDto, principal.getClaimAsString("email")));
     }
