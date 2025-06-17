@@ -1,9 +1,7 @@
 package com.example.todo_backend_mariadb.domain;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "users") // user는 DB상에서 예약어라서 오류가 발생할 가능성↑ / car에서는 AppUser였죠
