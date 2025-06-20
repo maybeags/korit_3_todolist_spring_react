@@ -20,7 +20,6 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role;
 
 
     @Builder        // 생성자에 @Builder 애너테이션 적용 예시 / 클래스 레벨이 아니라.
@@ -34,4 +33,5 @@ public class User {
         this.name = name;
         return this;
     }
+    private Role role;
 }
