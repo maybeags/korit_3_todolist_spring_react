@@ -58,7 +58,3 @@ React Native Jupgo 앱의 프론트엔드 빌드 및 설치는 성공했으나, 
     - 더미 상품 데이터를 반환.
 - `package.json`에 `start`, `dev`, `build` 스크립트 정의 확인.
 - `tsconfig.json` 설정 확인.
-
-### 현재 진행 중인 작업
-- 백엔드 서버 실행 대기 중.
-- 프론트엔드 앱 재실행 대기 중.
