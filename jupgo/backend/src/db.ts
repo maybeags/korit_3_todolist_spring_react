@@ -1,14 +1,12 @@
 import mysql from 'mysql2/promise';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import { env } from './config/env'; // Import env configuration
 
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_DATABASE || 'jupgo_db',
-  port: parseInt(process.env.DB_PORT || '3306', 10),
+  host: env.DB_HOST,
+  user: env.DB_USER,
+  password: env.DB_PASSWORD,
+  database: env.DB_DATABASE,
+  port: env.DB_PORT,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0

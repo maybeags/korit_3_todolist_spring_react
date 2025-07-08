@@ -10,6 +10,7 @@ async function seedDb() {
     await pool.execute('DELETE FROM product_images');
     await pool.execute('DELETE FROM transactions');
     await pool.execute('DELETE FROM products');
+    await pool.execute('DELETE FROM categories');
     await pool.execute('DELETE FROM user_profiles');
     await pool.execute('DELETE FROM users');
 
@@ -18,6 +19,8 @@ async function seedDb() {
       { email: 'user1@example.com', password: 'password123', nickname: '테스트유저1', location: '서울' },
       { email: 'user2@example.com', password: 'password123', nickname: '테스트유저2', location: '부산' },
       { email: 'user3@example.com', password: 'password123', nickname: '테스트유저3', location: '대구' },
+      { email: 'user4@example.com', password: 'password123', nickname: '테스트유저4', location: '인천' },
+      { email: 'user5@example.com', password: 'password123', nickname: '테스트유저5', location: '광주' },
     ];
 
     const userIds: number[] = [];
@@ -39,14 +42,36 @@ async function seedDb() {
       console.log(`User ${userData.email} created with ID: ${userId}`);
     }
 
-    // Insert dummy products with different authors
+    // Insert dummy categories
+    const categoriesToInsert = [
+      { name: '디지털기기', description: '스마트폰, 태블릿, 노트북 등' },
+      { name: '생활가전', description: '냉장고, 세탁기, 에어컨 등' },
+      { name: '가구/인테리어', description: '침대, 소파, 책상 등' },
+      { name: '스포츠/레저', description: '자전거, 등산용품, 헬스용품 등' },
+      { name: '의류', description: '남성복, 여성복, 아동복 등' },
+      { name: '도서/티켓/음반', description: '책, 공연 티켓, 앨범 등' },
+      { name: '기타', description: '그 외 모든 상품' },
+    ];
+
+    const categoryIds: number[] = [];
+    for (const categoryData of categoriesToInsert) {
+      const [categoryResult] = await pool.execute(
+        'INSERT INTO categories (name, description) VALUES (?, ?)',
+        [categoryData.name, categoryData.description]
+      );
+      const categoryId = (categoryResult as any).insertId;
+      categoryIds.push(categoryId);
+      console.log(`Category ${categoryData.name} created with ID: ${categoryId}`);
+    }
+
+    // Insert dummy products with different authors and categories
     const productsToInsert = [
       {
         name: '빈티지 가죽 지갑',
         price: '35,000원',
         description: '오래된 가죽 지갑이지만 상태가 좋습니다. 빈티지 스타일을 좋아하시는 분께 추천합니다.',
         author_index: 0, // user1
-        category_id: null,
+        category_index: 6, // 기타
         images: [
           'https://via.placeholder.com/300/FF5733/FFFFFF?text=Vintage+Wallet+1',
           'https://via.placeholder.com/300/33FF57/FFFFFF?text=Vintage+Wallet+2',
@@ -57,7 +82,7 @@ async function seedDb() {
         price: '70,000원',
         description: '선물 받았으나 사용하지 않아 판매합니다. 음질 좋습니다.',
         author_index: 1, // user2
-        category_id: null,
+        category_index: 0, // 디지털기기
         images: [
           'https://via.placeholder.com/300/3357FF/FFFFFF?text=Earphones+1',
           'https://via.placeholder.com/300/FF33A1/FFFFFF?text=Earphones+2',
@@ -68,7 +93,7 @@ async function seedDb() {
         price: '20,000원',
         description: '디자인 공부에 도움되는 서적 3권 세트입니다. 깨끗하게 사용했습니다.',
         author_index: 2, // user3
-        category_id: null,
+        category_index: 5, // 도서/티켓/음반
         images: [
           'https://via.placeholder.com/300/33FFBD/FFFFFF?text=Design+Book+1',
         ],
@@ -78,7 +103,7 @@ async function seedDb() {
         price: '50,000원',
         description: '한 번도 사용하지 않은 캠핑 의자입니다. 접이식이라 보관이 용이합니다.',
         author_index: 0, // user1
-        category_id: null,
+        category_index: 3, // 스포츠/레저
         images: [
           'https://via.placeholder.com/300/FFC300/FFFFFF?text=Camping+Chair+1',
         ],
@@ -88,18 +113,169 @@ async function seedDb() {
         price: '800,000원',
         description: '작년에 구매한 아이패드 프로입니다. 케이스와 함께 드립니다.',
         author_index: 1, // user2
-        category_id: null,
+        category_index: 0, // 디지털기기
         images: [
           'https://via.placeholder.com/300/DAF7A6/FFFFFF?text=iPad+Pro+1',
+        ],
+      },
+      {
+        name: '거의 새것인 냉장고',
+        price: '500,000원',
+        description: '이사하면서 판매합니다. 상태 좋습니다.',
+        author_index: 2, // user3
+        category_index: 1, // 생활가전
+        images: [
+          'https://via.placeholder.com/300/FF5733/FFFFFF?text=Refrigerator+1',
+        ],
+      },
+      {
+        name: '모던 스타일 소파',
+        price: '250,000원',
+        description: '새로운 소파를 구매하여 판매합니다. 사용감 적습니다.',
+        author_index: 0, // user1
+        category_index: 2, // 가구/인테리어
+        images: [
+          'https://via.placeholder.com/300/33FF57/FFFFFF?text=Sofa+1',
+        ],
+      },
+      {
+        name: '나이키 운동화 270mm',
+        price: '80,000원',
+        description: '한 번 착용 후 보관만 했습니다. 새것과 다름 없습니다.',
+        author_index: 1, // user2
+        category_index: 4, // 의류
+        images: [
+          'https://via.placeholder.com/300/3357FF/FFFFFF?text=Shoes+1',
+        ],
+      },
+      {
+        name: '베스트셀러 소설책',
+        price: '15,000원',
+        description: '재미있게 읽은 소설책입니다. 깨끗하게 보관했습니다.',
+        author_index: 2, // user3
+        category_index: 5, // 도서/티켓/음반
+        images: [
+          'https://via.placeholder.com/300/FF33A1/FFFFFF?text=Book+1',
+        ],
+      },
+      {
+        name: '미니멀 디자인 스탠드',
+        price: '40,000원',
+        description: '인테리어 소품으로 좋습니다. 불빛 조절 가능합니다.',
+        author_index: 0, // user1
+        category_index: 6, // 기타
+        images: [
+          'https://via.placeholder.com/300/33FFBD/FFFFFF?text=Lamp+1',
+        ],
+      },
+      {
+        name: '고성능 게이밍 노트북',
+        price: '1,200,000원',
+        description: '최신 게임도 원활하게 돌아갑니다. 1년 사용했습니다.',
+        author_index: 3, // user4
+        category_index: 0, // 디지털기기
+        images: [
+          'https://via.placeholder.com/300/FFC300/FFFFFF?text=Gaming+Laptop+1',
+        ],
+      },
+      {
+        name: '드럼 세탁기',
+        price: '300,000원',
+        description: '용량 큰 드럼 세탁기입니다. 작동 잘 됩니다.',
+        author_index: 4, // user5
+        category_index: 1, // 생활가전
+        images: [
+          'https://via.placeholder.com/300/DAF7A6/FFFFFF?text=Washing+Machine+1',
+        ],
+      },
+      {
+        name: '원목 식탁 세트',
+        price: '180,000원',
+        description: '4인용 원목 식탁과 의자 세트입니다. 튼튼합니다.',
+        author_index: 3, // user4
+        category_index: 2, // 가구/인테리어
+        images: [
+          'https://via.placeholder.com/300/C70039/FFFFFF?text=Dining+Table+1',
+        ],
+      },
+      {
+        name: '로드 자전거',
+        price: '400,000원',
+        description: '가볍고 속도 잘 나옵니다. 출퇴근용으로 좋습니다.',
+        author_index: 4, // user5
+        category_index: 3, // 스포츠/레저
+        images: [
+          'https://via.placeholder.com/300/900C3F/FFFFFF?text=Road+Bike+1',
+        ],
+      },
+      {
+        name: '여성 겨울 코트',
+        price: '90,000원',
+        description: '따뜻하고 디자인 예쁜 겨울 코트입니다. 드라이클리닝 완료.',
+        author_index: 3, // user4
+        category_index: 4, // 의류
+        images: [
+          'https://via.placeholder.com/300/581845/FFFFFF?text=Winter+Coat+1',
+        ],
+      },
+      {
+        name: '클래식 기타',
+        price: '120,000원',
+        description: '입문용으로 좋은 클래식 기타입니다. 케이스 포함.',
+        author_index: 4, // user5
+        category_index: 6, // 기타
+        images: [
+          'https://via.placeholder.com/300/FF5733/FFFFFF?text=Guitar+1',
+        ],
+      },
+      {
+        name: '무선 충전기',
+        price: '25,000원',
+        description: '고속 무선 충전기입니다. 모든 스마트폰 호환됩니다.',
+        author_index: 0, // user1
+        category_index: 0, // 디지털기기
+        images: [
+          'https://via.placeholder.com/300/33FF57/FFFFFF?text=Wireless+Charger+1',
+        ],
+      },
+      {
+        name: '공기청정기',
+        price: '150,000원',
+        description: '미세먼지 제거에 탁월합니다. 필�� 교체 시기 알림 기능.',
+        author_index: 1, // user2
+        category_index: 1, // 생활가전
+        images: [
+          'https://via.placeholder.com/300/3357FF/FFFFFF?text=Air+Purifier+1',
+        ],
+      },
+      {
+        name: '책상 의자',
+        price: '60,000원',
+        description: '편안한 사무용 의자입니다. 높이 조절 가능.',
+        author_index: 2, // user3
+        category_index: 2, // 가구/인테리어
+        images: [
+          'https://via.placeholder.com/300/FF33A1/FFFFFF?text=Office+Chair+1',
+        ],
+      },
+      {
+        name: '캠핑 텐트',
+        price: '100,000원',
+        description: '2인용 캠핑 텐트입니다. 설치 간편합니다.',
+        author_index: 3, // user4
+        category_index: 3, // 스포츠/레저
+        images: [
+          'https://via.placeholder.com/300/33FFBD/FFFFFF?text=Camping+Tent+1',
         ],
       },
     ];
 
     for (const product of productsToInsert) {
       const authorId = userIds[product.author_index];
+      const categoryId = categoryIds[product.category_index];
       const [result] = await pool.execute(
         'INSERT INTO products (author_id, category_id, name, price, description) VALUES (?, ?, ?, ?, ?)',
-        [authorId, product.category_id, product.name, product.price, product.description]
+        [authorId, categoryId, product.name, product.price, product.description]
       );
       const productId = (result as any).insertId;
 
