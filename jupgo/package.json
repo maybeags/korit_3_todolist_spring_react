@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "react-native-draggable-flatlist": "^4.0.3",
+    "react-native-vector-icons": "^10.2.0"
+  }
+}

@@ -79,7 +79,7 @@ export const findAllProducts = async (search?: string, authorId?: number, catego
 export const findProductById = async (id: string): Promise<Product | null> => {
   const [rows] = await pool.execute<Product[]>(`
     SELECT
-      p.id, p.name, p.price, p.description, p.status, p.created_at, p.author_id,
+      p.id, p.name, p.price, p.description, p.status, p.created_at, p.author_id, p.category_id,
       up.nickname AS author, up.location,
       COALESCE(JSON_ARRAYAGG(pi.image_url), '[]') AS images
     FROM products p
@@ -101,8 +101,12 @@ export const findProductById = async (id: string): Promise<Product | null> => {
   return product;
 };
 
-export const updateProductById = async (id: string, name: string, price: string, description: string, category_id: number) => {
-    // ... (existing logic)
+export const updateProductById = async (id: string, authorId: number, name: string, price: string, description: string, category_id: number) => {
+  const [result]: [any, any] = await pool.execute(
+    'UPDATE products SET name = ?, price = ?, description = ?, category_id = ? WHERE id = ? AND author_id = ?',
+    [name, price, description, category_id, id, authorId]
+  );
+  return result.affectedRows;
 };
 
 export const createProductInDb = async (author_id: number, category_id: number, name: string, price: string, description: string): Promise<number> => {
@@ -114,11 +118,34 @@ export const createProductInDb = async (author_id: number, category_id: number, 
 };
 
 export const addProductImages = async (productId: number, imageUrls: string[]) => {
-    // ... (existing logic)
+  if (imageUrls.length === 0) {
+    return; // No images to add
+  }
+
+  const values = imageUrls.map((url, index) => `(?, ?, ?)`).join(', ');
+  const params: (string | number)[] = [];
+  imageUrls.forEach((url, index) => {
+    params.push(productId);
+    params.push(url);
+    params.push(index); // order_index
+  });
+
+  const query = `INSERT INTO product_images (product_id, image_url, order_index) VALUES ${values}`;
+
+  try {
+    await pool.execute(query, params);
+  } catch (error) {
+    console.error('Error in addProductImages:', error);
+    throw error;
+  }
 };
 
-export const deleteProductById = async (id: string) => {
-    // ... (existing logic)
+export const deleteProductById = async (id: string, authorId: number) => {
+  const [result]: [any, any] = await pool.execute(
+    'DELETE FROM products WHERE id = ? AND author_id = ?',
+    [id, authorId]
+  );
+  return result.affectedRows;
 };
 
 export const findFavoriteProduct = async (userId: number, productId: string) => {

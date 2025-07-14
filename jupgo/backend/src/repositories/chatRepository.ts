@@ -128,3 +128,33 @@ export const findAllUserChatRooms = async (userId: number) => {
     throw error;
   }
 };
+
+export const deleteMessagesByChatId = async (chatId: number) => {
+  console.log('Attempting to delete messages for chatId:', chatId); // Added log
+  const query = 'DELETE FROM messages WHERE chat_id = ?';
+  const params = [chatId];
+  console.log('Executing deleteMessagesByChatId query:', query, 'with params:', params);
+  try {
+    const [result]: [any, any] = await pool.execute(query, params);
+    console.log('deleteMessagesByChatId query executed, affectedRows:', result.affectedRows);
+    return result.affectedRows;
+  } catch (error) {
+    console.error('Error in deleteMessagesByChatId:', error);
+    throw error;
+  }
+};
+
+export const deleteChatRoomById = async (chatId: number) => {
+  console.log('Attempting to delete chat room with chatId:', chatId); // Added log
+  const query = 'DELETE FROM chats WHERE id = ?';
+  const params = [chatId];
+  console.log('Executing deleteChatRoomById query:', query, 'with params:', params);
+  try {
+    const [result]: [any, any] = await pool.execute(query, params);
+    console.log('deleteChatRoomById query executed, affectedRows:', result.affectedRows);
+    return result.affectedRows;
+  } catch (error) {
+    console.error('Error in deleteChatRoomById:', error);
+    throw error;
+  }
+};

@@ -1,13 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 import { Server } from 'socket.io';
-import { 
-  findChatRoom, 
-  findProductAuthor, 
-  createChatRoom, 
-  createMessage, 
-  updateChatLastMessageAt, 
-  findChatMessages, 
-  findAllUserChatRooms 
+import {
+  findChatRoom,
+  findProductAuthor,
+  createChatRoom,
+  createMessage,
+  updateChatLastMessageAt,
+  findChatMessages,
+  findAllUserChatRooms,
+  deleteChatRoomById,
+  deleteMessagesByChatId
 } from '../repositories/chatRepository';
 
 interface ChatRow {
@@ -82,20 +84,37 @@ export const getChatHistory = async (req: Request, res: Response, next: NextFunc
 
   try {
     console.log('Attempting to find chat room for history...');
-    const chat = await findChatRoom(productId, Number(user1Id), Number(user2Id));
+    // Do not convert productId to Number, as repository expects a string
+    let chat = await findChatRoom(productId, Number(user1Id), Number(user2Id));
     console.log('Chat room for history found/not found:', chat);
 
-    if (!chat) {
-      return res.status(200).json([]);
+    let chatId;
+    let messages: any[] = [];
+
+    if (chat) {
+      chatId = (chat as ChatRow).id;
+      console.log('Attempting to find chat messages for chatId:', chatId);
+      messages = await findChatMessages(chatId);
+      console.log('Chat messages found:', messages.length);
+    } else {
+      // If chat does not exist, create it.
+      console.log('No chat room found. Creating a new one.');
+      // Do not convert productId to Number
+      const productAuthor = await findProductAuthor(productId);
+      if (!productAuthor) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+      const actualSellerId = productAuthor.author_id;
+      const sellerIdForChat = actualSellerId;
+      const buyerIdForChat = Number(user1Id) === Number(actualSellerId) ? Number(user2Id) : Number(user1Id);
+
+      // Do not convert productId to Number
+      chatId = await createChatRoom(productId, sellerIdForChat, buyerIdForChat);
+      console.log('New chat room created with ID:', chatId);
+      // Messages will be an empty array for a new chat room
     }
 
-    const chatId = (chat as ChatRow).id;
-
-    console.log('Attempting to find chat messages for chatId:', chatId);
-    const messages = await findChatMessages(chatId);
-    console.log('Chat messages found:', messages.length);
-
-    res.status(200).json(messages);
+    res.status(200).json({ chatId, messages }); // Always return chatId and messages
   } catch (error) {
     console.error('Error in getChatHistory:', error);
     next(error);
@@ -120,4 +139,36 @@ export const getUserChatRooms = async (req: Request, res: Response, next: NextFu
         console.error('Error in getUserChatRooms:', error);
         next(error);
     }
+};
+
+export const getMessagesByChatId = async (req: Request, res: Response, next: NextFunction) => {
+  const { chatId } = req.params;
+  console.log('getMessagesByChatId called with chatId:', chatId);
+
+  try {
+    const messages = await findChatMessages(Number(chatId));
+    res.status(200).json(messages);
+  } catch (error) {
+    console.error('Error in getMessagesByChatId:', error);
+    next(error);
+  }
+};
+
+export const deleteChatRoom = async (req: Request, res: Response, next: NextFunction) => {
+  const { chatId } = req.params;
+  console.log('Received DELETE request for chatId:', chatId); // Added log
+
+  try {
+    await deleteMessagesByChatId(Number(chatId)); // Delete messages first
+    const affectedRows = await deleteChatRoomById(Number(chatId)); // Then delete the chat room
+
+    if (affectedRows === 0) {
+      return res.status(404).json({ message: 'Chat room not found' });
+    }
+
+    res.status(200).json({ message: 'Chat room deleted successfully' });
+  } catch (error) {
+    console.error('Error in deleteChatRoom:', error);
+    next(error);
+  }
 };

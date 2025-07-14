@@ -3,11 +3,14 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import http from 'http';
 import { Server } from 'socket.io';
+import swaggerUi from 'swagger-ui-express';
+import specs from './swagger';
 
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import productRoutes from './routes/productRoutes';
 import chatRoutes from './routes/chatRoutes';
+import categoryRoutes from './routes/categoryRoutes'; // Add this line
 import { authenticateToken } from './middleware/authMiddleware';
 import { setIoInstance } from './controllers/chatController';
 import { errorHandler } from './middleware/errorHandler';
@@ -29,6 +32,8 @@ const PORT = env.PORT; // Use PORT from env
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use('/uploads', express.static('uploads')); // Serve static files
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
@@ -48,6 +53,7 @@ io.on('connection', (socket) => {
 
 // Public routes
 app.use('/api', authRoutes);
+app.use('/api', categoryRoutes); // Add this line
 
 // Protected routes
 app.use('/api', authenticateToken, userRoutes);

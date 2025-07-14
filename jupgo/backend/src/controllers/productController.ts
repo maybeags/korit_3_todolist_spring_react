@@ -43,31 +43,59 @@ export const getProductById = async (req: Request, res: Response, next: NextFunc
   }
 };
 
-export const updateProduct = async (req: Request, res: Response, next: NextFunction) => {
-    // ... (existing logic)
+export const updateProduct = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  const { name, price, description, imageUrls, categoryId } = req.body; // Add imageUrls
+  const userId = req.userId; // From authenticateToken middleware
+
+  if (!userId) {
+    return res.status(401).json({ message: 'Unauthorized: User ID not found.' });
+  }
+
+  if (!name || !price || !description || !categoryId) {
+    return res.status(400).json({ message: 'Product name, price, description, and category are required.' });
+  }
+
+  try {
+    const affectedRows = await updateProductById(id, userId, name, price, description, categoryId);
+
+    if (affectedRows === 0) {
+      return res.status(404).json({ message: 'Product not found or you are not the author.' });
+    }
+
+    // Handle image updates: For simplicity, we'll just add new images.
+    // A more robust solution would involve deleting existing images first.
+    if (imageUrls && imageUrls.length > 0) {
+        await addProductImages(Number(id), imageUrls); // Assuming id can be converted to number for addProductImages
+    }
+
+    res.status(200).json({ message: 'Product updated successfully' });
+  } catch (error) {
+    console.error('Error updating product:', error);
+    next(error);
+  }
 };
 
 export const createProduct = async (req: AuthRequest, res: Response, next: NextFunction) => {
-    const { name, price, description, imageUrl } = req.body;
+    const { name, price, description, imageUrls, categoryId } = req.body; // Add categoryId
     const authorId = req.userId; // From authenticateToken middleware
 
     if (!authorId) {
         return res.status(401).json({ message: 'Unauthorized: User ID not found.' });
     }
 
-    if (!name || !price || !description) {
-        return res.status(400).json({ message: 'Product name, price, and description are required.' });
+    // Add categoryId to the validation
+    if (!name || !price || !description || !categoryId) {
+        return res.status(400).json({ message: 'Product name, price, description, and category are required.' });
     }
 
     try {
-        // TODO: Implement category selection in frontend or default category handling
-        // For now, using a placeholder category_id (e.g., 1)
-        const categoryId = 1; // Placeholder: Replace with actual category logic
-
+        // The categoryId is now received from the request body
         const productId = await createProductInDb(authorId, categoryId, name, price, description);
+        console.log('Product created in DB with ID:', productId); // Add this log
 
-        if (imageUrl) {
-            await addProductImages(productId, [imageUrl]);
+        if (imageUrls && imageUrls.length > 0) {
+            await addProductImages(productId, imageUrls);
         }
 
         res.status(201).json({ message: 'Product registered successfully', productId });
@@ -77,8 +105,26 @@ export const createProduct = async (req: AuthRequest, res: Response, next: NextF
     }
 };
 
-export const deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
-    // ... (existing logic)
+export const deleteProduct = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  const userId = req.userId; // From authenticateToken middleware
+
+  if (!userId) {
+    return res.status(401).json({ message: 'Unauthorized: User ID not found.' });
+  }
+
+  try {
+    const affectedRows = await deleteProductById(id, userId);
+
+    if (affectedRows === 0) {
+      return res.status(404).json({ message: 'Product not found or you are not the author.' });
+    }
+
+    res.status(200).json({ message: 'Product deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    next(error);
+  }
 };
 
 export const addFavoriteProduct = async (req: AuthRequest, res: Response, next: NextFunction) => {
